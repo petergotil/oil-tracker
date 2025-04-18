@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Oil Reserves Countdown</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .counter-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .counter {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #34495e;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .digit {
+            display: inline-block;
+            width: 0.6em;
+            transition: all 0.1s ease-in-out;
+            position: relative;
+        }
+
+        /* Oil Deposit Visualization */
+        .oil-deposit-container {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            margin: 30px auto;
+            perspective: 1000px;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .landscape {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #c2b280 0%, #e9ddb8 100%);
+            /* Sand color */
+            overflow: hidden;
+        }
+
+        .sand-texture {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><filter id="noise" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.3"/></svg>');
+            opacity: 0.4;
+        }
+
+        .sand-dunes {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 50%;
+        }
+
+        .dune {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 70px;
+            background: #d5c496;
+            border-radius: 50% 50% 0 0;
+            transform: scaleX(1.5);
+        }
+
+        .dune:nth-child(1) {
+            bottom: -35px;
+            left: -10%;
+            width: 120%;
+            height: 90px;
+            opacity: 0.8;
+        }
+
+        .dune:nth-child(2) {
+            bottom: -25px;
+            left: -30%;
+            width: 160%;
+            height: 70px;
+            opacity: 0.6;
+        }
+
+        .dune:nth-child(3) {
+            bottom: -15px;
+            left: 10%;
+            width: 100%;
+            height: 60px;
+            opacity: 0.7;
+        }
+
+        .oil-pool {
+            position: absolute;
+            width: 70%;
+            height: 55%;
+            bottom: 10%;
+            left: 15%;
+            background: transparent;
+            border-radius: 50% 50% 45% 45%;
+            overflow: hidden;
+            box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .oil-level {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to bottom, rgba(30, 30, 30, 0.9), rgba(0, 0, 0, 0.95));
+            transition: height 0.3s linear;
+            box-shadow: 0 -3px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .oil-surface {
+            position: absolute;
+            width: 100%;
+            height: 10px;
+            top: 0;
+            background: linear-gradient(to bottom, rgba(80, 80, 80, 0.6), rgba(20, 20, 20, 0.9));
+        }
+
+        /* Oil ripple effect */
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .ripples {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ripple {
+            position: absolute;
+            width: 30px;
+            height: 6px;
+            background: radial-gradient(ellipse at center, rgba(80, 80, 80, 0.6) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            animation: ripple 2s infinite ease-out;
+        }
+
+        .ripple:nth-child(1) {
+            left: 30%;
+            top: 40%;
+        }
+
+        .ripple:nth-child(2) {
+            left: 60%;
+            top: 30%;
+            animation-delay: 0.5s;
+        }
+
+        .ripple:nth-child(3) {
+            left: 45%;
+            top: 60%;
+            animation-delay: 1s;
+        }
+
+        .extraction-pump {
+            position: absolute;
+            top: 0%;
+            right: 20%;
+            width: 10px;
+            height: 200px;
+            background: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #34495e;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e9e9e9;
+        }
+
+        .highlight {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .data-note {
+            font-style: italic;
+            color: #7f8c8d;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="counter-container">
+        <h1>Oil Left in the World:</h1>
+        <div id="oil-counter" class="counter"></div>
+
+        <div class="oil-deposit-container">
+            <div class="landscape">
+                <div class="sand-texture"></div>
+                <div class="sand-dunes">
+                    <div class="dune"></div>
+                    <div class="dune"></div>
+                    <div class="dune"></div>
+                </div>
+                <div class="oil-pool">
+                    <div class="oil-level" id="oil-level">
+                        <div class="oil-surface">
+                            <div class="ripples">
+                                <div class="ripple"></div>
+                                <div class="ripple"></div>
+                                <div class="ripple"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="extraction-pump"></div>
+            </div>
+        </div>
+
+        <table>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+                <th>Unit</th>
+            </tr>
+            <tr>
+                <td>Oil Reserves (2016)</td>
+                <td class="highlight">1,650,585,140,000</td>
+                <td>barrels</td>
+            </tr>
+            <tr>
+                <td>Oil Consumption</td>
+                <td>35,442,913,090</td>
+                <td>barrels per year</td>
+            </tr>
+            <tr>
+                <td>Oil Consumption</td>
+                <td>97,103,871</td>
+                <td>barrels per day</td>
+            </tr>
+            <tr>
+                <td>Reserves/Consumption</td>
+                <td id="years-left" class="highlight">47</td>
+                <td>years left</td>
+            </tr>
+        </table>
+
+        <p class="data-note">(Data shown in the table is for 2016. Counter shows current estimate.)</p>
+    </div>
+
+    <script>
+        // Initial data (as of 2016)
+        const initialReserves = 1650585140000; // in barrels
+        const consumptionPerYear = 35442913090; // in barrels per year
+        const consumptionPerDay = 97103871; // in barrels per day
+        const consumptionPerSecond = consumptionPerDay / 86400; // barrels per second
+
+        // Reference time (2016)
+        const referenceDate = new Date('2016-01-01').getTime();
+
+        // Initialize the counter with digits
+        const counterElement = document.getElementById('oil-counter');
+        let lastNumber = 0;
+
+        // Create initial digit elements
+        function setupCounter(initialValue) {
+            const formattedNumber = Math.floor(initialValue).toLocaleString();
+            for (let i = 0; i < formattedNumber.length; i++) {
+                const char = formattedNumber[i];
+                const digitSpan = document.createElement('span');
+                digitSpan.className = char === ',' ? '' : 'digit';
+                digitSpan.textContent = char;
+                counterElement.appendChild(digitSpan);
+            }
+            lastNumber = initialValue;
+        }
+
+        function updateCounter() {
+            const now = new Date().getTime();
+            const secondsElapsed = (now - referenceDate) / 1000;
+
+            // Calculate remaining oil based on elapsed time and consumption rate
+            const consumedSinceReference = secondsElapsed * consumptionPerSecond;
+            const remainingOil = initialReserves - consumedSinceReference;
+
+            // Calculate percentage remaining
+            const percentageRemaining = (remainingOil / initialReserves) * 100;
+
+            // Format the numbers
+            const formattedCurrent = Math.floor(remainingOil).toLocaleString();
+            const formattedLast = Math.floor(lastNumber).toLocaleString();
+
+            // Update only the digits that changed for a fluid effect
+            if (counterElement.children.length === 0) {
+                setupCounter(remainingOil);
+            } else if (formattedCurrent.length !== formattedLast.length) {
+                // If the number of digits changed, rebuild the counter
+                counterElement.innerHTML = '';
+                setupCounter(remainingOil);
+            } else {
+                // Update only changing digits
+                for (let i = 0; i < formattedCurrent.length; i++) {
+                    if (i < counterElement.children.length && formattedCurrent[i] !== formattedLast[i]) {
+                        const digitElement = counterElement.children[i];
+
+                        // Add animation effect for changing digits
+                        if (digitElement.className === 'digit') {
+                            digitElement.style.transform = 'translateY(-3px)';
+                            digitElement.style.opacity = '0.5';
+
+                            setTimeout(() => {
+                                digitElement.textContent = formattedCurrent[i];
+                                digitElement.style.transform = 'translateY(0)';
+                                digitElement.style.opacity = '1';
+                            }, 50);
+                        } else {
+                            digitElement.textContent = formattedCurrent[i];
+                        }
+                    }
+                }
+            }
+
+            // Update the oil visualization
+            document.getElementById('oil-level').style.height = percentageRemaining + '%';
+
+            // Calculate years left
+            const yearsLeft = remainingOil / consumptionPerYear;
+            document.getElementById('years-left').textContent = Math.floor(yearsLeft);
+
+            lastNumber = remainingOil;
+        }
+
+        // Update the counter more frequently for fluid animation
+        setInterval(updateCounter, 100);
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', function () {
+            const now = new Date().getTime();
+            const secondsElapsed = (now - referenceDate) / 1000;
+            const consumedSinceReference = secondsElapsed * consumptionPerSecond;
+            const remainingOil = initialReserves - consumedSinceReference;
+            setupCounter(remainingOil);
+            updateCounter();
+        });
+    </script>
+</body>
+
+</html>
